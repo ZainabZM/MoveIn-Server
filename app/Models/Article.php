@@ -22,7 +22,7 @@ class Article extends Model
     // RELATION AVEC LA TABLE FAVOURITES
     public function favoritedBy()
     {
-        return $this->belongsToMany(User::class, 'favourites')->withTimestamps();
+        return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
     }
 
     // RELATION AVEC LA TABLE FILES
