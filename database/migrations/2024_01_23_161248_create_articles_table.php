@@ -22,7 +22,7 @@ return new class extends Migration
             $table->string('state');
             $table->string('description');
             $table->integer('price');
-            $table->foreignIdFor(User::class)->nullable()->constrained();
+            $table->foreignIdFor(User::class)->constrained();
         });
     }
 

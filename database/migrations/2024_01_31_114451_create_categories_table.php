@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('category');
             $table->timestamps();
         });
-        Schema::create('category_article', function (Blueprint $table) {
+        Schema::create('article_category', function (Blueprint $table) {
             $table->foreignIdFor(\App\Models\Category::class)->constrained()->cascadeOnDelete();
             $table->foreignIdFor(\App\Models\Article::class)->constrained()->cascadeOnDelete();
             $table->primary(['category_id', 'article_id']);
@@ -29,6 +29,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('categories');
-        Schema::dropIfExists('category_place');
+        Schema::dropIfExists('article_category');
     }
 };

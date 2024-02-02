@@ -4,17 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Article extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'file', 'brand', 'color', 'state', 'description', 'price', 'user_id'];
+    protected $fillable = ['title', 'brand', 'color', 'state', 'description', 'file', 'price', 'user_id'];
 
     // RELATION AVEC LA TABLE CATEGORIES
-    public function categories(): BelongsToMany
+    public function categories()
     {
         return $this->belongsToMany(Category::class);
     }
