@@ -2,64 +2,157 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Article;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use App\Models\Article;
 
 class ArticleController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
+
+    // Récupération de tous les articles
     public function index()
     {
-        //
+        $articles = Article::all();
+
+        return response()->json([
+            'status' => 'true',
+            'articles' => $articles,
+        ]);
+    }
+    // Création d'un post
+    public function create(Request $request)
+    {
+
+        $validator = $this->validateArticleRequest($request);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'false',
+                'data' => $validator->errors()
+            ]);
+        }
+
+        $fileName = time() . '.' . $request->file->extension();
+
+        $request->file->storeAs('public/images', $fileName);
+
+        $article = $this->storeArticle($request, $fileName);
+
+        $categories = $this->syncCategories($article, $request->category);
+
+        return response()->json([
+            'status' => 'true',
+            'message' => 'Article créé avec succès',
+            'categories' => $categories,
+            'article' => $article,
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    // Récupération d'un article spécifique
+    public function show($id)
     {
-        //
-    }
+        $article = Article::findOrFail($id);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+        return response()->json([
+            'status' => 'true',
+            'article' => $article,
+        ]);
     }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Article $article)
+    // Modification d'un article
+    public function edit($id)
     {
-        //
+        $article = Article::findOrFail($id);
+
+        return response()->json([
+            'status' => 'true',
+            'article' => $article,
+        ]);
     }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Article $article)
+    // Mise à jour d'un article
+    public function update(Request $request, $id)
     {
-        //
+        $validator = $this->validateArticleRequest($request);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 'false',
+                'data' => $validator->errors()
+            ]);
+        }
+
+        $article = Article::findOrFail($id);
+        $fileName = $this->storeImage($request->file('file')); // Change here
+        $article->update($request->except(['file', 'category']));
+        $article->update(['file' => $fileName]);
+        $categories = $this->syncCategories($article, $request->category);
+
+        return response()->json([
+            'status' => 'true',
+            'message' => 'Article mis à jour avec succès',
+            'categories' => $categories,
+            'article' => $article,
+        ]);
     }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Article $article)
+    // Suppression d'un article
+    public function destroy($id)
     {
-        //
+        $article = Article::findOrFail($id);
+        $article->delete();
+
+        return response()->json([
+            'status' => 'true',
+            'message' => 'Article supprimé avec succès',
+        ]);
     }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Article $article)
+    // Vérification du bon renseignement des champs requis 
+    private function validateArticleRequest(Request $request)
     {
-        //
+        return Validator::make($request->all(), [
+            'title' => 'required',
+            'brand' => 'required',
+            'color' => 'required',
+            'state' => 'required',
+            'description' => 'required',
+            'price' => 'required',
+            'file' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:3000',
+            'category' => 'required',
+        ]);
+    }
+    // Création d'un article et stockage dans la db
+    private function storeArticle(Request $request, $fileName)
+    {
+        $user_id = Auth::id();
+
+        return Article::create([
+            'title' => $request->title,
+            'brand' => $request->brand,
+            'color' => $request->color,
+            'state' => $request->state,
+            'description' => $request->description,
+            'price' => $request->price,
+            'file' => $fileName,
+            'user_id' => $user_id,
+        ]);
+    }
+    // Stockage du fichier dans le dossier images(storage) et renvoie d'une url de l'image
+    private function storeImage($file)
+    {
+        $fileName = time() . '.' . $file->extension();
+        $filePath = $file->storeAs('public/images', $fileName);
+
+        // Use public_path to get the public URL
+        $publicPath = asset(str_replace('public/', 'storage/', $filePath));
+
+        return $publicPath;
+    }
+    // Synchronisation des catégories
+    private function syncCategories(Article $article, $categories)
+    {
+        $article->categories()->sync($categories);
+
+        $article->load('categories');
+        return $article->categories;
     }
 }

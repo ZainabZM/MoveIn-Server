@@ -18,11 +18,11 @@ return new class extends Migration
             $table->string('title');
             $table->string('file');
             $table->string('brand');
-            $table->string('colour');
+            $table->string('color');
             $table->string('state');
             $table->string('description');
             $table->integer('price');
-            $table->foreignIdFor(User::class)->nullable()->constrained();
+            $table->foreignIdFor(User::class)->constrained();
         });
     }
 
