@@ -1,5 +1,6 @@
 <?php
 
+
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\LoginController;
@@ -16,7 +17,6 @@ use Illuminate\Support\Facades\Route;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
 
 // INSCRIPTION CONNEXION
 Route::post('/register', [RegisterController::class, 'register']);
