@@ -15,6 +15,12 @@ class ArticleController extends Controller
     {
         $articles = Article::all();
 
+        // Add full URL for each image
+        $articles->transform(function ($article) {
+            $article->file = asset("storage/images/{$article->file}");
+            return $article;
+        });
+
         return response()->json([
             'status' => 'true',
             'articles' => $articles,
