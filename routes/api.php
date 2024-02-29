@@ -4,6 +4,7 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,7 +20,7 @@ use Illuminate\Support\Facades\Route;
 
 // INSCRIPTION CONNEXION
 Route::post('/register', [RegisterController::class, 'register']);
-Route::post('/login', [LoginController::class, 'login']);
+Route::name('login')->post('/login', [LoginController::class, 'login']);
 
 Route::get('/categories', [CategoryController::class, 'index']); // Récupérer les catégories
 
@@ -32,4 +33,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/articles', [ArticleController::class, 'create']); // Créer un post
     Route::put('/articles/{id}', [ArticleController::class, 'update']); // Mettre à jour un article
     Route::delete('/articles/{id}', [ArticleController::class, 'destroy']); // Supprimer un article
+    Route::get('/dashboard/', [UserController::class, 'profile']);
+    Route::post('/user/{userId}/favorites/{articleId}', [UserController::class, 'addToFavorites']);
 });

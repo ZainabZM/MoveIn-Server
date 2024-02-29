@@ -60,6 +60,8 @@ class ArticleController extends Controller
     {
         $article = Article::findOrFail($id);
 
+        $article->file = asset('storage/images/' . $article->file);
+
         return response()->json([
             'status' => 'true',
             'article' => $article,
@@ -101,14 +103,23 @@ class ArticleController extends Controller
         ]);
     }
     // Suppression d'un article
-    public function destroy($id)
+    public function destroy($id, Request $request)
     {
         $article = Article::findOrFail($id);
+
+        // Check if the user ID matches the article's user ID
+        if (Auth::id() !== $article->user_id) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'You are not authorized to delete this article.',
+            ], 403); // Forbidden status code
+        }
+
         $article->delete();
 
         return response()->json([
             'status' => 'true',
-            'message' => 'Article supprimé avec succès',
+            'message' => 'Article deleted successfully',
         ]);
     }
     // Vérification du bon renseignement des champs requis 
