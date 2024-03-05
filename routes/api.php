@@ -33,6 +33,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/articles', [ArticleController::class, 'create']); // Créer un post
     Route::put('/articles/{id}', [ArticleController::class, 'update']); // Mettre à jour un article
     Route::delete('/articles/{id}', [ArticleController::class, 'destroy']); // Supprimer un article
-    Route::get('/dashboard/', [UserController::class, 'profile']);
+    Route::get('/dashboard/', [UserController::class, 'profile']); // Accéder à son profil
+    Route::put('/profile/edit', [UserController::class, 'editProfile']); // Modifier profil
+    Route::put('/profile/password', [UserController::class, 'updatePassword']);  // Modifier mot de passe
     Route::post('/user/{userId}/favorites/{articleId}', [UserController::class, 'addToFavorites']);
 });
