@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\UserController;
@@ -33,8 +34,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/articles', [ArticleController::class, 'create']); // Créer un post
     Route::put('/articles/{id}', [ArticleController::class, 'update']); // Mettre à jour un article
     Route::delete('/articles/{id}', [ArticleController::class, 'destroy']); // Supprimer un article
-    Route::get('/dashboard/', [UserController::class, 'profile']); // Accéder à son profil
+    Route::get('/profile/', [UserController::class, 'profile']); // Accéder à son profil
     Route::put('/profile/edit', [UserController::class, 'editProfile']); // Modifier profil
     Route::put('/profile/password', [UserController::class, 'updatePassword']);  // Modifier mot de passe
-    Route::post('/user/{userId}/favorites/{articleId}', [UserController::class, 'addToFavorites']);
+    Route::get('/profile/articles', [ArticleController::class, 'userArticles']); // Récupérer articles de l'utilisateur connecté
+    Route::post('/favorites', [FavoriteController::class, 'create']); // Mettre article en favoris
+    Route::get('/favorites', [FavoriteController::class, 'index']); // Récupérer articles favoris de l'utilisateur
+    Route::delete('/favorites/{id}', [FavoriteController::class, 'destroy']); // Supprimer un favoris
 });

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Article;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ArticleController extends Controller
 {
@@ -80,8 +82,18 @@ class ArticleController extends Controller
     // Mise à jour d'un article
     public function update(Request $request, $id)
     {
-        $validator = $this->validateArticleRequest($request);
+        // Validate the request data
+        $validator = Validator::make($request->all(), [
+            'title' => 'required',
+            'brand' => 'required',
+            'color' => 'required',
+            'state' => 'required',
+            'description' => 'required',
+            'price' => 'required',
+            'category' => 'required',
+        ]);
 
+        // Check if the validation fails
         if ($validator->fails()) {
             return response()->json([
                 'status' => 'false',
@@ -89,16 +101,60 @@ class ArticleController extends Controller
             ]);
         }
 
+        // Retrieve the article by ID
         $article = Article::findOrFail($id);
-        $fileName = $this->storeImage($request->file('file')); // Change here
-        $article->update($request->except(['file', 'category']));
-        $article->update(['file' => $fileName]);
-        $categories = $this->syncCategories($article, $request->category);
 
+        // Check if the request contains a file
+        if ($request->hasFile('file')) {
+            // Validate the file
+            $fileValidator = Validator::make($request->all(), [
+                'file' => 'image|mimes:jpeg,png,jpg,gif,svg|max:3000',
+            ]);
+
+            // Check if file validation fails
+            if ($fileValidator->fails()) {
+                return response()->json([
+                    'status' => 'false',
+                    'data' => $fileValidator->errors()
+                ]);
+            }
+
+            // Store the image file
+            $fileName = time() . '.' . $request->file('file')->extension();
+            $filePath = $request->file('file')->storeAs('public/images', $fileName);
+
+            // Log the file name before updating
+            Log::info('Old file name: ' . $article->file);
+
+            // Update article's file field
+            $article->file = $fileName;
+
+            // Log the file name after updating
+            Log::info('New file name: ' . $article->file);
+
+            // Delete old file if it exists
+            if ($article->file) {
+                $oldFilePath = 'public/images/' . $article->file;
+                if (Storage::exists($oldFilePath)) {
+                    Storage::delete($oldFilePath);
+                }
+            }
+
+            // Update article's file field
+            $article->file = $fileName;
+        }
+
+        // Update other article fields
+        $article->update($request->only(['title', 'brand', 'color', 'state', 'description', 'price']));
+
+
+        // Sync article categories
+        $this->syncCategories($article, $request->category);
+
+        // Return success response
         return response()->json([
             'status' => 'true',
             'message' => 'Article mis à jour avec succès',
-            'categories' => $categories,
             'article' => $article,
         ]);
     }
@@ -106,7 +162,6 @@ class ArticleController extends Controller
     public function destroy($id, Request $request)
     {
         $article = Article::findOrFail($id);
-
         // Check if the user ID matches the article's user ID
         if (Auth::id() !== $article->user_id) {
             return response()->json([
@@ -114,12 +169,28 @@ class ArticleController extends Controller
                 'message' => 'You are not authorized to delete this article.',
             ], 403); // Forbidden status code
         }
-
         $article->delete();
 
         return response()->json([
             'status' => 'true',
             'message' => 'Article deleted successfully',
+        ]);
+    }
+    // Récupère les articles de l'utilisateur connecté
+    public function userArticles()
+    {
+        $user_id = Auth::id();
+
+        $articles = Article::where('user_id', $user_id)->get();
+
+        $articles->transform(function ($article) {
+            $article->file = asset("storage/images/{$article->file}");
+            return $article;
+        });
+
+        return response()->json([
+            'status' => 'true',
+            'articles' => $articles,
         ]);
     }
     // Vérification du bon renseignement des champs requis 
@@ -152,17 +223,7 @@ class ArticleController extends Controller
             'user_id' => $user_id,
         ]);
     }
-    // Stockage du fichier dans le dossier images(storage) et renvoie d'une url de l'image
-    private function storeImage($file)
-    {
-        $fileName = time() . '.' . $file->extension();
-        $filePath = $file->storeAs('public/images', $fileName);
 
-        // Use public_path to get the public URL
-        $publicPath = asset(str_replace('public/', 'storage/', $filePath));
-
-        return $publicPath;
-    }
     // Synchronisation des catégories
     private function syncCategories(Article $article, $categories)
     {
