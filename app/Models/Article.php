@@ -14,7 +14,7 @@ class Article extends Model
     // RELATION AVEC LA TABLE CATEGORIES
     public function categories()
     {
-        return $this->belongsToMany(Category::class);
+        return $this->belongsToMany(Category::class, 'article_category');
     }
 
     // RELATION AVEC LA TABLE FAVOURITES

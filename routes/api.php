@@ -26,6 +26,7 @@ Route::name('login')->post('/login', [LoginController::class, 'login']);
 
 Route::get('/categories', [CategoryController::class, 'index']); // Récupérer les catégories
 Route::get('/search', [SearchController::class, 'search']);
+Route::get('/filter/{category}', [SearchController::class, 'filterByCategory']);
 
 
 // AFFICHAGE ARTICLE(S)
