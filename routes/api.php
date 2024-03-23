@@ -5,6 +5,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\RegisterController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -24,6 +25,8 @@ Route::post('/register', [RegisterController::class, 'register']);
 Route::name('login')->post('/login', [LoginController::class, 'login']);
 
 Route::get('/categories', [CategoryController::class, 'index']); // Récupérer les catégories
+Route::get('/search', [SearchController::class, 'search']);
+
 
 // AFFICHAGE ARTICLE(S)
 Route::get('/articles', [ArticleController::class, 'index']); // Récupérer tous les articles
