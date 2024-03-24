@@ -4,6 +4,7 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\FavoriteController;
 use App\Http\Controllers\LoginController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\RegisterController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\UserController;
@@ -22,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 
 // INSCRIPTION CONNEXION
 Route::post('/register', [RegisterController::class, 'register']);
-Route::name('login')->post('/login', [LoginController::class, 'login']);
+Route::post('/login', [LoginController::class, 'login']);
 
 Route::get('/categories', [CategoryController::class, 'index']); // Récupérer les catégories
 Route::get('/search', [SearchController::class, 'search']);
@@ -45,4 +46,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/favorites', [FavoriteController::class, 'create']); // Mettre article en favoris
     Route::get('/favorites', [FavoriteController::class, 'index']); // Récupérer articles favoris de l'utilisateur
     Route::delete('/favorites/{id}', [FavoriteController::class, 'destroy']); // Supprimer un favoris
+    Route::post('/messages/send', [MessageController::class, 'sendMessage']); // Envoyer un message
+    Route::get('/conversations', [MessageController::class, 'getConversations']); // Liste users message
+    Route::get('/conversation/{userId1}/{userId2}', [MessageController::class, 'getMessagesBetweenUsers']);
+    // Conversation avec un user
+
+
 });
