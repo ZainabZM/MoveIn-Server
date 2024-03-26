@@ -16,8 +16,8 @@ class RegisterController extends Controller
             'firstname' => 'required',
             'lastname' => 'required',
             'username' => 'required',
-            'email' => 'required',
-            'password' => 'required',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:11|regex:/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{11,}$/',
         ]);
 
         // S'il manque un ou plusieurs champs
@@ -37,15 +37,13 @@ class RegisterController extends Controller
                 'password' => $request->password,
             ]);
 
-            // Utilisation de Sanctum pour créer un jeton d'accès
-            $token = $user->createToken('remember_token')->plainTextToken;
+
 
             // Renvoie les informations du user en format json
             return response()->json([
                 'status' => 'true',
                 'message' => 'Utilisateur inscrit avec succès yeeesssss',
                 'user' => $user,
-                'token' => $token,
             ]);
         }
     }
