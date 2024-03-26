@@ -61,9 +61,7 @@ class ArticleController extends Controller
     public function show($id)
     {
         $article = Article::findOrFail($id);
-
-        $article->file = asset('storage/images/' . $article->file);
-
+        $article->file = asset("storage/images/{$article->file}");
         return response()->json([
             'status' => 'true',
             'article' => $article,
@@ -120,33 +118,15 @@ class ArticleController extends Controller
             }
 
             // Store the image file
-            $fileName = time() . '.' . $request->file('file')->extension();
-            $filePath = $request->file('file')->storeAs('public/images', $fileName);
+            $fileName = time() . '.' . $request->file->extension();
 
-            // Log the file name before updating
-            Log::info('Old file name: ' . $article->file);
-
-            // Update article's file field
-            $article->file = $fileName;
-
-            // Log the file name after updating
-            Log::info('New file name: ' . $article->file);
-
-            // Delete old file if it exists
-            if ($article->file) {
-                $oldFilePath = 'public/images/' . $article->file;
-                if (Storage::exists($oldFilePath)) {
-                    Storage::delete($oldFilePath);
-                }
-            }
 
             // Update article's file field
             $article->file = $fileName;
         }
 
         // Update other article fields
-        $article->update($request->only(['title', 'brand', 'color', 'state', 'description', 'price']));
-
+        $article->update($request->only(['title', 'brand', 'color', 'state', 'description', 'price', 'file']));
 
         // Sync article categories
         $this->syncCategories($article, $request->category);
@@ -158,6 +138,8 @@ class ArticleController extends Controller
             'article' => $article,
         ]);
     }
+
+
     // Suppression d'un article
     public function destroy($id, Request $request)
     {
